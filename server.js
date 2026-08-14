@@ -102,8 +102,8 @@ wss.on("connection", (ws) => {
     if (!room) return;
     const other = ws.role === "agent" ? room.viewer : room.agent;
     if (other && other.readyState === WebSocket.OPEN) {
-      // Forward as-is (binary frames for screen images, JSON for input/control)
-      other.send(raw);
+      // Forward as a text frame (not binary) so browsers parse it correctly.
+      other.send(typeof raw === "string" ? raw : raw.toString("utf8"));
     }
   });
 
