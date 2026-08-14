@@ -1,0 +1,12 @@
+{
+  "name": "remote-desktop-relay",
+  "version": "1.0.0",
+  "description": "Relay server connecting a Windows agent and a web viewer for DIY remote desktop",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
+}
