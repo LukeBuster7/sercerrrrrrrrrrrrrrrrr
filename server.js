@@ -45,7 +45,19 @@ wss.on("connection", (ws) => {
   ws.role = null;
   ws.roomCode = null;
 
-  ws.on("message", (raw) => {
+  ws.on("message", (raw, isBinary) => {
+    // Binary messages are always screen-frame JPEG bytes — relay untouched
+    // and skip JSON parsing entirely.
+    if (isBinary) {
+      const room = rooms.get(ws.roomCode);
+      if (!room) return;
+      const other = ws.role === "agent" ? room.viewer : room.agent;
+      if (other && other.readyState === WebSocket.OPEN) {
+        other.send(raw, { binary: true });
+      }
+      return;
+    }
+
     let msg;
     try {
       msg = JSON.parse(raw);
@@ -97,12 +109,11 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // Any other message just gets relayed to the other side of the room.
+    // Any other (text/JSON) message just gets relayed to the other side.
     const room = rooms.get(ws.roomCode);
     if (!room) return;
     const other = ws.role === "agent" ? room.viewer : room.agent;
     if (other && other.readyState === WebSocket.OPEN) {
-      // Forward as a text frame (not binary) so browsers parse it correctly.
       other.send(typeof raw === "string" ? raw : raw.toString("utf8"));
     }
   });
